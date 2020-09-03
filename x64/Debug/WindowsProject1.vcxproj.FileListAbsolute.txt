@@ -1,2 +1,0 @@
-C:\Users\user\source\repos\GameServerProgramming\x64\Debug\WindowsProject1.exe
-C:\Users\user\source\repos\GameServerProgramming\x64\Debug\WindowsProject1.pdb
