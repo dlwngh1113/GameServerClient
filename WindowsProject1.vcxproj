@@ -141,6 +141,7 @@
   <ItemGroup>
     <ClInclude Include="Board.h" />
     <ClInclude Include="framework.h" />
+    <ClInclude Include="GameFramework.h" />
     <ClInclude Include="King.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="Sector.h" />
@@ -149,6 +150,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Board.cpp" />
+    <ClCompile Include="GameFramework.cpp" />
     <ClCompile Include="King.cpp" />
     <ClCompile Include="Sector.cpp" />
     <ClCompile Include="WindowsProject1.cpp" />

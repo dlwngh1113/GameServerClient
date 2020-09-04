@@ -33,3 +33,5 @@ x64/Debug/WindowsProject1.vcxproj.FileListAbsolute.txt
 .vs/WindowsProject1/v16/Browse.VC.db-shm
 .vs/WindowsProject1/v16/Browse.VC.db-wal
 .vs/WindowsProject1/v16/Browse.VC.opendb
+x64/Debug/GameFramework.obj
+.vs/WindowsProject1/v16/ipch/AutoPCH/c21f1b3ea77567d0/GAMEFRAMEWORK.ipch

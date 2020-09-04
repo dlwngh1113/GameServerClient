@@ -18,7 +18,7 @@ Sector::~Sector()
 	image.Destroy();
 }
 
-void Sector::draw(HDC MemDC)
+void Sector::draw(HDC MemDC) const
 {
 	image.Draw(MemDC, pt.x, pt.y, SECTORSIZE, SECTORSIZE);
 }

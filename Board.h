@@ -8,5 +8,5 @@ class Board
 public:
 	Board();
 	virtual ~Board();
-	void draw(HDC MemDC);
+	void draw(HDC MemDC) const;
 };

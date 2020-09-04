@@ -21,7 +21,7 @@ Board::~Board()
 	sectors.clear();
 }
 
-void Board::draw(HDC MemDC)
+void Board::draw(HDC MemDC) const
 {
 	for (int i = 0; i < 8; ++i)
 		for (int j = 0; j < 8; ++j)

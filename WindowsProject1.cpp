@@ -3,7 +3,7 @@
 
 #include "framework.h"
 #include "WindowsProject1.h"
-#include"Board.h"
+#include"GameFramework.h"
 
 #define MAX_LOADSTRING 100
 
@@ -12,7 +12,7 @@ HINSTANCE hInst;                                // 현재 인스턴스입니다.
 WCHAR szTitle[MAX_LOADSTRING];                  // 제목 표시줄 텍스트입니다.
 WCHAR szWindowClass[MAX_LOADSTRING];            // 기본 창 클래스 이름입니다.
 
-Board chessBoard;    //체스 판
+GameFramework myGame;
 
 // 이 코드 모듈에 포함된 함수의 선언을 전달합니다:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
@@ -131,6 +131,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     switch (message)
     {
+    case WM_CREATE:
+        SetTimer(hWnd, 1, 100, NULL);
+        break;
     case WM_COMMAND:
         {
             int wmId = LOWORD(wParam);
@@ -148,17 +151,29 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             }
         }
         break;
+    case WM_KEYDOWN:
+        myGame.KeyInputManager(hWnd, message, wParam, lParam);
+        break;
     case WM_PAINT:
         {
             PAINTSTRUCT ps;
             HDC hdc = BeginPaint(hWnd, &ps);
             // TODO: 여기에 hdc를 사용하는 그리기 코드를 추가합니다...
-            chessBoard.draw(hdc);
+            myGame.draw(hdc);
             EndPaint(hWnd, &ps);
         }
         break;
     case WM_DESTROY:
+        KillTimer(hWnd, 1);
         PostQuitMessage(0);
+        break;
+    case WM_TIMER:
+        switch (wParam)
+        {
+        case 1:
+            InvalidateRect(hWnd, NULL, FALSE);
+            break;
+        }
         break;
     default:
         return DefWindowProc(hWnd, message, wParam, lParam);

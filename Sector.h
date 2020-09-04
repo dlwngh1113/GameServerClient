@@ -20,5 +20,5 @@ public:
 	Sector() = default;
 	Sector(Color color, POINT pt);
 	virtual ~Sector();
-	void draw(HDC MemDC);
+	void draw(HDC MemDC) const;
 };
