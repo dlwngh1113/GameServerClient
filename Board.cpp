@@ -1,13 +1,13 @@
 #include "Board.h"
 
-Board::Board()
+Board::Board():pt{ NULL }
 {
 	Color c = Color::WHITE;
-	pt = { 0,0 };
 	for (int i = 0; i < 8; ++i) {
-		c = Color((int)c + 1 % 2);
+		c = static_cast<Color>(((int)c + 1) % 2);
 		for (int j = 0; j < 8; ++j) {
-			sectors[i][j] = Sector(Color((int)c + 1 % 2), POINT{ pt.x + 20 * i, pt.y + 20 * j });
+			sectors[i][j] = Sector(c, POINT{ pt.x + SECTORSIZE * i, pt.y + SECTORSIZE * j });
+			c = static_cast<Color>(((int)c + 1) % 2);
 		}
 	}
 }

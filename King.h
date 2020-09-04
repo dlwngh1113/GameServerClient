@@ -1,10 +1,9 @@
 #pragma once
 #include<atlimage.h>
-class Pawn
+class King
 {
 	CImage image;
 public:
-	Pawn();
-	virtual ~Pawn();
+	King();
+	virtual ~King();
 };
-

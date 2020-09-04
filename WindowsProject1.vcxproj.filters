@@ -33,7 +33,7 @@
     <ClInclude Include="Board.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="Pawn.h">
+    <ClInclude Include="King.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>
@@ -47,7 +47,7 @@
     <ClCompile Include="Board.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="Pawn.cpp">
+    <ClCompile Include="King.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
