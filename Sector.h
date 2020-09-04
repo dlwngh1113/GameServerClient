@@ -1,7 +1,7 @@
 #pragma once
 #include<atlimage.h>
 
-#define SECTORSIZE 40
+#define SECTORSIZE 80
 
 enum class Color {
 	BLACK,

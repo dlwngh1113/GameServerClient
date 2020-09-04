@@ -14,5 +14,5 @@
 #include <memory.h>
 #include <tchar.h>
 
-#define SCREEN_WIDTH 1024
-#define SCREEN_HEIGHT 960
+#define SCREEN_WIDTH 640
+#define SCREEN_HEIGHT 640

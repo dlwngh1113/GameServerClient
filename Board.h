@@ -1,8 +1,9 @@
 #pragma once
+#include<vector>
 #include"Sector.h"
 class Board
 {
-	Sector sectors[8][8];
+	std::vector<std::vector<Sector*>> sectors;
 	POINT pt;
 public:
 	Board();
