@@ -12,12 +12,13 @@ HINSTANCE hInst;                                // 현재 인스턴스입니다.
 WCHAR szTitle[MAX_LOADSTRING];                  // 제목 표시줄 텍스트입니다.
 WCHAR szWindowClass[MAX_LOADSTRING];            // 기본 창 클래스 이름입니다.
 
-GameFramework myGame;
+GameFramework gameFramework;
 
 // 이 코드 모듈에 포함된 함수의 선언을 전달합니다:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
 BOOL                InitInstance(HINSTANCE, int);
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
+INT_PTR CALLBACK DlgProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
@@ -132,6 +133,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     switch (message)
     {
     case WM_CREATE:
+        DialogBox(hInst, MAKEINTRESOURCE(IDD_IPDIALOG), hWnd, DlgProc);
         SetTimer(hWnd, 1, 100, NULL);
         break;
     case WM_COMMAND:
@@ -152,14 +154,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         }
         break;
     case WM_KEYDOWN:
-        myGame.KeyInputManager(hWnd, message, wParam, lParam);
+        gameFramework.KeyInputManager(hWnd, message, wParam, lParam);
         break;
     case WM_PAINT:
         {
             PAINTSTRUCT ps;
             HDC hdc = BeginPaint(hWnd, &ps);
             // TODO: 여기에 hdc를 사용하는 그리기 코드를 추가합니다...
-            myGame.draw(hdc);
+            gameFramework.draw(hdc);
             EndPaint(hWnd, &ps);
         }
         break;
@@ -179,6 +181,23 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         return DefWindowProc(hWnd, message, wParam, lParam);
     }
     return 0;
+}
+
+INT_PTR CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+{
+    CHAR str[30] = { NULL };
+    switch (message)
+    {
+    case WM_INITDIALOG:
+        return (INT_PTR)TRUE;
+    case WM_COMMAND:
+        if (LOWORD(wParam) == IDOK || LOWORD(wParam) == IDCANCEL) {
+            GetDlgItemText(hDlg, IDC_EDIT1, str, sizeof(str)/ sizeof(CHAR));
+            EndDialog(hDlg, LOWORD(wParam));
+        }
+        return (INT_PTR)TRUE;
+    }
+    return (INT_PTR)FALSE;
 }
 
 // 정보 대화 상자의 메시지 처리기입니다.
