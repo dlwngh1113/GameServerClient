@@ -16,3 +16,9 @@
 
 #define SCREEN_WIDTH 640
 #define SCREEN_HEIGHT 640
+
+//네트워킹 헤더 파일
+#pragma comment(lib, "ws2_32")
+#include<WS2tcpip.h>
+#define PORT 3500
+#define BUF_SIZE 1024

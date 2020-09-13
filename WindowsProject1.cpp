@@ -185,14 +185,18 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 INT_PTR CALLBACK DlgProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
-    CHAR str[30] = { NULL };
+    CHAR SERVER_ADDR[128] = { NULL };
     switch (message)
     {
     case WM_INITDIALOG:
         return (INT_PTR)TRUE;
     case WM_COMMAND:
         if (LOWORD(wParam) == IDOK || LOWORD(wParam) == IDCANCEL) {
-            GetDlgItemText(hDlg, IDC_EDIT1, str, sizeof(str)/ sizeof(CHAR));
+            GetDlgItemText(hDlg, IDC_EDIT1, SERVER_ADDR, sizeof(SERVER_ADDR));
+            CHAR* tmp = new CHAR[strlen(SERVER_ADDR) + 1];
+            memcpy_s(tmp, strlen(SERVER_ADDR) + 1, SERVER_ADDR, strlen(SERVER_ADDR) + 1);
+            gameFramework.SetServerAddr(tmp);
+            delete[] tmp;
             EndDialog(hDlg, LOWORD(wParam));
         }
         return (INT_PTR)TRUE;
