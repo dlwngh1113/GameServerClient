@@ -35,7 +35,7 @@ void GameFramework::KeyInputManager(HWND hWnd, UINT message, WPARAM wParam, LPAR
 				DWORD flag = 0;
 				wsaBuf.len = BUF_SIZE;
 				WSARecv(serverSocket, &wsaBuf, 1, &num_recv, &flag, NULL, NULL);
-				//cout << "Recieved " << num_recv << "Bytes [" << wsabuf.buf << "]\n";
+				player->move(atoi(wsaBuf.buf), 0);
 			}
 				break;
 			case VK_RIGHT:
@@ -49,6 +49,7 @@ void GameFramework::KeyInputManager(HWND hWnd, UINT message, WPARAM wParam, LPAR
 				DWORD flag = 0;
 				wsaBuf.len = BUF_SIZE;
 				WSARecv(serverSocket, &wsaBuf, 1, &num_recv, &flag, NULL, NULL);
+				player->move(atoi(wsaBuf.buf), 0);
 			}
 				break;
 			case VK_UP:
@@ -62,6 +63,7 @@ void GameFramework::KeyInputManager(HWND hWnd, UINT message, WPARAM wParam, LPAR
 				DWORD flag = 0;
 				wsaBuf.len = BUF_SIZE;
 				WSARecv(serverSocket, &wsaBuf, 1, &num_recv, &flag, NULL, NULL);
+				player->move(0, atoi(wsaBuf.buf));
 			}
 				break;
 			case VK_DOWN:
@@ -75,6 +77,7 @@ void GameFramework::KeyInputManager(HWND hWnd, UINT message, WPARAM wParam, LPAR
 				DWORD flag = 0;
 				wsaBuf.len = BUF_SIZE;
 				WSARecv(serverSocket, &wsaBuf, 1, &num_recv, &flag, NULL, NULL);
+				player->move(0, atoi(wsaBuf.buf));
 			}
 				break;
 			}

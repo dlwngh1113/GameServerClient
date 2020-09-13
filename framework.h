@@ -21,4 +21,4 @@
 #pragma comment(lib, "ws2_32")
 #include<WS2tcpip.h>
 #define PORT 3500
-#define BUF_SIZE 1024
+#define BUF_SIZE 128
