@@ -1,21 +1,21 @@
 #pragma once
-#include"framework.h"
 #include"Board.h"
 #include"King.h"
+#include"ClientInfo.h"
 
 class GameFramework
 {
-	Board* board = NULL;
 	King* player = NULL;
-	char* SERVER_ADDR = NULL;
-	WSADATA wsaData;
-	SOCKET serverSocket;
-	SOCKADDR_IN serverAddr;
+	Board* board = NULL;
 public:
+	static ClientInfo clientInfo;
 	GameFramework();
 	virtual ~GameFramework();
 	void KeyInputManager(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
-	void draw(HDC MemDC)const;
 	void SetServerAddr(CHAR* addr);
+	void Draw(HDC MemDC)const;
+	static void PlayerMove();
 };
 
+void CALLBACK Send_Complete(DWORD err, DWORD bytes, LPWSAOVERLAPPED over, DWORD flag);
+void CALLBACK Recv_Complete(DWORD err, DWORD bytes, LPWSAOVERLAPPED over, DWORD flag);

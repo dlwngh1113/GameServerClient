@@ -140,6 +140,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Board.h" />
+    <ClInclude Include="ClientInfo.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="GameFramework.h" />
     <ClInclude Include="King.h" />
