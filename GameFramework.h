@@ -1,11 +1,12 @@
 #pragma once
+#include"framework.h"
 #include"Board.h"
 #include"King.h"
 #include"ClientInfo.h"
 
 class GameFramework
 {
-	King* player = NULL;
+	static King** players;
 	Board* board = NULL;
 public:
 	static ClientInfo clientInfo;

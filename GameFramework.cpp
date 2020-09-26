@@ -1,16 +1,23 @@
 #include "GameFramework.h"
 
+ClientInfo GameFramework::clientInfo;
+King** GameFramework::players{ new King * [MAX_USERS] };
+
 GameFramework::GameFramework():board{new Board}
 {
-	player = new King();
+	for (int i = 0; i < MAX_USERS; ++i)
+		players[i] = NULL;
+	players[0] = new King{};
 }
 
 GameFramework::~GameFramework()
 {
 	if(board)
 		delete board;
-	if(player)
-		delete player;
+	for (int i = 0; i < MAX_USERS; ++i)
+		if (players[i])
+			delete players[i];
+	delete[] players;
 	WSACleanup();
 }
 
@@ -26,34 +33,34 @@ void GameFramework::KeyInputManager(HWND hWnd, UINT message, WPARAM wParam, LPAR
 			{
 				strcpy_s(clientInfo.messageBuffer, BUF_SIZE + 1, "VK_LEFT");
 				clientInfo.wsaBuf.buf = clientInfo.messageBuffer;
-				clientInfo.wsaBuf.len = static_cast<ULONG>(strlen("VK_LEFT") + 1);
+				clientInfo.wsaBuf.len = strlen("VK_LEFT");
 				DWORD num_sent;
-				WSASend(clientInfo.socket, &clientInfo.wsaBuf, 1, &num_sent, 0, &clientInfo.over, NULL);
+				WSASend(clientInfo.socket, &clientInfo.wsaBuf, 1, &num_sent, 0, &clientInfo.over, Send_Complete);
 			}
 				break;
 			case VK_RIGHT:
 			{
 				strcpy_s(clientInfo.messageBuffer, BUF_SIZE + 1, "VK_RIGHT");
 				clientInfo.wsaBuf.buf = clientInfo.messageBuffer;
-				clientInfo.wsaBuf.len = static_cast<ULONG>(strlen("VK_RIGHT") + 1);
+				clientInfo.wsaBuf.len = strlen("VK_RIGHT");
 				DWORD num_sent;
-				WSASend(clientInfo.socket, &clientInfo.wsaBuf, 1, &num_sent, 0, &clientInfo.over, NULL);
+				WSASend(clientInfo.socket, &clientInfo.wsaBuf, 1, &num_sent, 0, &clientInfo.over, Send_Complete);
 			}
 				break;
 			case VK_UP:
 			{
 				strcpy_s(clientInfo.messageBuffer, BUF_SIZE + 1, "VK_UP");
 				clientInfo.wsaBuf.buf = clientInfo.messageBuffer;
-				clientInfo.wsaBuf.len = static_cast<ULONG>(strlen("VK_UP") + 1);
+				clientInfo.wsaBuf.len = strlen("VK_UP");
 				DWORD num_sent;
-				WSASend(clientInfo.socket, &clientInfo.wsaBuf, 1, &num_sent, 0, &clientInfo.over, NULL);
+				WSASend(clientInfo.socket, &clientInfo.wsaBuf, 1, &num_sent, 0, &clientInfo.over, Send_Complete);
 			}
 				break;
 			case VK_DOWN:
 			{
 				strcpy_s(clientInfo.messageBuffer, BUF_SIZE + 1, "VK_DOWN");
 				clientInfo.wsaBuf.buf = clientInfo.messageBuffer;
-				clientInfo.wsaBuf.len = static_cast<ULONG>(strlen("VK_DOWN") + 1);
+				clientInfo.wsaBuf.len = strlen("VK_DOWN");
 				DWORD num_sent;
 				WSASend(clientInfo.socket, &clientInfo.wsaBuf, 1, &num_sent, 0, &clientInfo.over, Send_Complete);
 			}
@@ -71,7 +78,9 @@ void GameFramework::Draw(HDC hdc) const
 
 	SelectObject(MemDC, hBitmap);
 	board->draw(MemDC);
-	player->draw(MemDC);
+	for (int i=0;i<MAX_USERS;++i)
+		if(players[i])
+			players[i]->draw(MemDC);
 	BitBlt(hdc, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, MemDC, 0, 0, SRCCOPY);
 }
 
@@ -90,10 +99,21 @@ void GameFramework::SetServerAddr(CHAR* addr)
 
 void GameFramework::PlayerMove()
 {
-
+	std::string s = clientInfo.messageBuffer;
+	int idx, x, y;
+	std::stringstream ss;
+	ss.str(s);
+	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+	DWORD dwByte(0);
+	WriteFile(hConsole, s.c_str(), s.size(), &dwByte, NULL);
+	while (ss >> idx >> x >> y) {
+		if (!players[idx])
+			players[idx] = new King{};
+		players[idx]->move(x, y);
+	}
 }
 
-void Send_Complete(DWORD err, DWORD bytes, LPWSAOVERLAPPED over, DWORD flag)
+void CALLBACK Send_Complete(DWORD err, DWORD bytes, LPWSAOVERLAPPED over, DWORD flag)
 {
 	if (bytes > 0) {
 		printf("TRACE - Send Message : %s(%d bytes)\n", GameFramework::clientInfo.messageBuffer, bytes);
@@ -109,12 +129,12 @@ void Send_Complete(DWORD err, DWORD bytes, LPWSAOVERLAPPED over, DWORD flag)
 	int ret = WSARecv(GameFramework::clientInfo.socket, &GameFramework::clientInfo.wsaBuf, 1, NULL, &flag, over, Recv_Complete);
 }
 
-void Recv_Complete(DWORD err, DWORD bytes, LPWSAOVERLAPPED over, DWORD flag)
+void CALLBACK Recv_Complete(DWORD err, DWORD bytes, LPWSAOVERLAPPED over, DWORD flag)
 {
 	if (bytes > 0) {
 		GameFramework::clientInfo.messageBuffer[bytes] = NULL;
-		printf("TRACE - Send Message : %s(%d bytes)\n", GameFramework::clientInfo.messageBuffer, bytes);
 		GameFramework::PlayerMove();
+		printf("TRACE - Send Message : %s(%d bytes)\n", GameFramework::clientInfo.messageBuffer, bytes);
 	}
 	else {
 		printf("Client Connection Closed\n");
@@ -123,5 +143,5 @@ void Recv_Complete(DWORD err, DWORD bytes, LPWSAOVERLAPPED over, DWORD flag)
 	}
 	GameFramework::clientInfo.wsaBuf.len = bytes;
 	ZeroMemory(over, sizeof(*over));
-	int ret = WSASend(GameFramework::clientInfo.socket, &GameFramework::clientInfo.wsaBuf, 1, NULL, NULL, over, Send_Complete);
+	WSASend(GameFramework::clientInfo.socket, &GameFramework::clientInfo.wsaBuf, 1, NULL, 0, &GameFramework::clientInfo.over, Send_Complete);
 }

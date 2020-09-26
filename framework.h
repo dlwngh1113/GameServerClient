@@ -13,6 +13,8 @@
 #include <malloc.h>
 #include <memory.h>
 #include <tchar.h>
+#include<iostream>
+#include<sstream>
 
 #define SCREEN_WIDTH 640
 #define SCREEN_HEIGHT 640
@@ -22,3 +24,4 @@
 #include<WS2tcpip.h>
 #define PORT 3500
 #define BUF_SIZE 1024
+#define MAX_USERS 10

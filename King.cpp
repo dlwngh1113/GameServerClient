@@ -14,10 +14,10 @@ void King::draw(HDC MemDC) const
 	image.Draw(MemDC, pt.x, pt.y, 80, 80);
 }
 
-void King::move(int dx, int dy)
+void King::move(int x, int y)
 {
-	if(pt.x + dx >= 0 && pt.x + dx < SCREEN_WIDTH)
-		pt.x += dx;
-	if (pt.y + dy >= 0 && pt.y + dy < SCREEN_HEIGHT)
-		pt.y += dy;
+	if (0 < x && x < SCREEN_WIDTH)
+		pt.x = x;
+	if (0 < y && y < SCREEN_HEIGHT)
+		pt.y = y;
 }

@@ -133,6 +133,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     switch (message)
     {
     case WM_CREATE:
+        AllocConsole();
         DialogBox(hInst, MAKEINTRESOURCE(IDD_IPDIALOG), hWnd, DlgProc);
         SetTimer(hWnd, 1, 100, NULL);
         break;
