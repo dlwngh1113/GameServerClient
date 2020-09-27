@@ -3,11 +3,14 @@
 
 class ClientInfo {
 public:
-	char messageBuffer[BUF_SIZE + 1];
+	char recvBuffer[BUF_SIZE + 1] = { NULL };
+	char sendBuffer[BUF_SIZE + 1] = { NULL };
 	WSADATA wsaData;
-	WSABUF wsaBuf;
+	WSABUF sendWsabuf;
+	WSABUF recvWsabuf;
 
 	SOCKET socket;
 	SOCKADDR_IN serverAddr;
-	WSAOVERLAPPED over;
+	WSAOVERLAPPED recvOver;
+	WSAOVERLAPPED sendOver;
 };

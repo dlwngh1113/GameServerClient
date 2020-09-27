@@ -104,7 +104,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    RECT rt{ 0,0,SCREEN_WIDTH, SCREEN_HEIGHT };
    AdjustWindowRect(&rt, WS_OVERLAPPEDWINDOW, true);
 
-   HWND hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
+   HWND hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPED,
       CW_USEDEFAULT, CW_USEDEFAULT, rt.right - rt.left, rt.bottom - rt.top, nullptr, nullptr, hInstance, nullptr);
 
    if (!hWnd)
@@ -135,7 +135,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     case WM_CREATE:
         AllocConsole();
         DialogBox(hInst, MAKEINTRESOURCE(IDD_IPDIALOG), hWnd, DlgProc);
-        SetTimer(hWnd, 1, 100, NULL);
+        SetTimer(hWnd, 1, 10, NULL);
         break;
     case WM_COMMAND:
         {
@@ -168,12 +168,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         break;
     case WM_DESTROY:
         KillTimer(hWnd, 1);
+        FreeConsole();
         PostQuitMessage(0);
         break;
     case WM_TIMER:
         switch (wParam)
         {
         case 1:
+            gameFramework.Update();
             InvalidateRect(hWnd, NULL, FALSE);
             break;
         }

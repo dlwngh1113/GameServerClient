@@ -14,7 +14,8 @@ public:
 	virtual ~GameFramework();
 	void KeyInputManager(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 	void SetServerAddr(CHAR* addr);
-	void Draw(HDC MemDC)const;
+	void Draw(HDC MemDC);
+	void Update();
 	static void PlayerMove();
 };
 
