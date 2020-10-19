@@ -4,6 +4,11 @@ King::King(): pt{ NULL }
 	image.Load("Resources\\King.jpg");
 }
 
+King::King(char id) : pt{ NULL }, id{id}
+{
+	image.Load("Resources\\King.jpg");
+}
+
 King::~King()
 {
 	image.Destroy();

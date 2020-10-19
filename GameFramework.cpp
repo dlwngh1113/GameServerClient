@@ -7,7 +7,6 @@ GameFramework::GameFramework() :board{ new Board }
 {
 	for (int i = 0; i < MAX_USERS; ++i)
 		players[i] = NULL;
-	players[0] = new King{};
 }
 
 GameFramework::~GameFramework()
@@ -33,39 +32,37 @@ void GameFramework::KeyInputManager(HWND hWnd, UINT message, WPARAM wParam, LPAR
 		{
 			strcpy_s(clientInfo.sendBuffer, std::to_string(VK_LEFT).c_str());
 			clientInfo.sendWsabuf.buf = clientInfo.sendBuffer;
-			clientInfo.sendWsabuf.len = strlen(clientInfo.sendBuffer);
-			DWORD num_sent;
-			WSASend(clientInfo.socket, &clientInfo.sendWsabuf, 1, &num_sent, 0, &clientInfo.sendOver, Send_Complete);
+			clientInfo.sendWsabuf.len = static_cast<ULONG>(strlen(clientInfo.sendBuffer));
+			WSASend(clientInfo.socket, &clientInfo.sendWsabuf, 1, NULL, 0, &clientInfo.sendOver, Send_Complete);
 		}
 		break;
 		case VK_RIGHT:
 		{
 			strcpy_s(clientInfo.sendBuffer, std::to_string(VK_RIGHT).c_str());
 			clientInfo.sendWsabuf.buf = clientInfo.sendBuffer;
-			clientInfo.sendWsabuf.len = strlen(clientInfo.sendBuffer);
-			DWORD num_sent;
-			WSASend(clientInfo.socket, &clientInfo.sendWsabuf, 1, &num_sent, 0, &clientInfo.sendOver, Send_Complete);
+			clientInfo.sendWsabuf.len = static_cast<ULONG>(strlen(clientInfo.sendBuffer));
+			WSASend(clientInfo.socket, &clientInfo.sendWsabuf, 1, NULL, 0, &clientInfo.sendOver, Send_Complete);
 		}
 		break;
 		case VK_UP:
 		{
 			strcpy_s(clientInfo.sendBuffer, std::to_string(VK_UP).c_str());
 			clientInfo.sendWsabuf.buf = clientInfo.sendBuffer;
-			clientInfo.sendWsabuf.len = strlen(clientInfo.sendBuffer);
-			DWORD num_sent;
-			WSASend(clientInfo.socket, &clientInfo.sendWsabuf, 1, &num_sent, 0, &clientInfo.sendOver, Send_Complete);
+			clientInfo.sendWsabuf.len = static_cast<ULONG>(strlen(clientInfo.sendBuffer));
+			WSASend(clientInfo.socket, &clientInfo.sendWsabuf, 1, NULL, 0, &clientInfo.sendOver, Send_Complete);
 		}
 		break;
 		case VK_DOWN:
 		{
 			strcpy_s(clientInfo.sendBuffer, std::to_string(VK_DOWN).c_str());
 			clientInfo.sendWsabuf.buf = clientInfo.sendBuffer;
-			clientInfo.sendWsabuf.len = strlen(clientInfo.sendBuffer);
-			DWORD num_sent;
-			WSASend(clientInfo.socket, &clientInfo.sendWsabuf, 1, &num_sent, 0, &clientInfo.sendOver, Send_Complete);
+			clientInfo.sendWsabuf.len = static_cast<ULONG>(strlen(clientInfo.sendBuffer));
+			WSASend(clientInfo.socket, &clientInfo.sendWsabuf, 1, NULL, 0, &clientInfo.sendOver, Send_Complete);
 		}
 		break;
 		case VK_ESCAPE:
+		case 'Q':
+		case 'q':
 			PostQuitMessage(0);
 			break;
 		}
@@ -79,17 +76,21 @@ void GameFramework::Draw(HDC hdc)
 	HBITMAP hBitmap = CreateCompatibleBitmap(hdc, SCREEN_WIDTH, SCREEN_HEIGHT);
 	HDC MemDC = CreateCompatibleDC(hdc);
 
+	//double buffering begin
 	SelectObject(MemDC, hBitmap);
 	board->draw(MemDC);
 	for (int i = 0; i < MAX_USERS; ++i)
 		if (players[i])
 			players[i]->draw(MemDC);
+	//double buffering end
+
 	BitBlt(hdc, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, MemDC, 0, 0, SRCCOPY);
 }
 
 void GameFramework::SetServerAddr(CHAR* addr)
 {
-	WSAStartup(MAKEWORD(2, 2), &clientInfo.wsaData);
+	if (WSAStartup(MAKEWORD(2, 2), &clientInfo.wsaData) != 0)
+		return;
 	clientInfo.socket = WSASocketW(AF_INET, SOCK_STREAM, IPPROTO_TCP, NULL, 0, WSA_FLAG_OVERLAPPED);
 	memset(&clientInfo.serverAddr, 0, sizeof(clientInfo.serverAddr));
 	clientInfo.serverAddr.sin_family = AF_INET;
@@ -105,13 +106,13 @@ void GameFramework::SetServerAddr(CHAR* addr)
 void GameFramework::PlayerMove()
 {
 	std::string s = clientInfo.recvWsabuf.buf;
-	int idx, x, y;
+	int id, x, y;
 	std::stringstream ss;
 	ss.str(s);
-	while (ss >> idx >> x >> y) {
-		if (!players[idx])
-			players[idx] = new King{};
-		players[idx]->move(x, y);
+	while (ss >> id >> x >> y) {
+		if (!players[id])
+			players[id] = new King{};
+		players[id]->move(x, y);
 	}
 }
 
@@ -144,6 +145,7 @@ void CALLBACK Recv_Complete(DWORD err, DWORD bytes, LPWSAOVERLAPPED over, DWORD 
 		DWORD dwByte = NULL;
 		HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 		WriteFile(hConsole, GameFramework::clientInfo.recvWsabuf.buf, GameFramework::clientInfo.recvWsabuf.len, &dwByte, NULL);
+		GameFramework::clientInfo.recvWsabuf.buf[bytes] = '\0';
 		GameFramework::PlayerMove();
 	}
 	else {
