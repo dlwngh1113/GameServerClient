@@ -33,7 +33,7 @@
     </Font>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\2020_IOCP_SERVER\2020_IOCP_SERVER\protocol.h">
+    <ClInclude Include="..\..\GameServerServer\2020_IOCP_SERVER\protocol.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>

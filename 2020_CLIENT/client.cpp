@@ -7,13 +7,15 @@
 using namespace std;
 using namespace chrono;
 
-#include "..\..\2020_IOCP_SERVER\2020_IOCP_SERVER\protocol.h"
+#include"..\..\GameServerServer\2020_IOCP_SERVER\protocol.h"
 
 sf::TcpSocket g_socket;
 
 constexpr auto TILE_WIDTH = 65;
-constexpr auto WINDOW_WIDTH = TILE_WIDTH * (VIEW_LIMIT * 2 + 1) + 10;   // size of window
-constexpr auto WINDOW_HEIGHT = TILE_WIDTH * (VIEW_LIMIT * 2 + 1) + 10;
+constexpr auto CLIENT_WIDTH = 20;
+constexpr auto CLIENT_HEIGHT = 20;
+constexpr auto WINDOW_WIDTH = TILE_WIDTH * CLIENT_WIDTH + 10;   // size of window
+constexpr auto WINDOW_HEIGHT = TILE_WIDTH * CLIENT_HEIGHT + 10;
 constexpr auto BUF_SIZE = 200;
 
 // 추후 확장용.
@@ -151,8 +153,8 @@ void ProcessPacket(char* ptr)
 		sc_packet_login_ok* my_packet = reinterpret_cast<sc_packet_login_ok*>(ptr);
 		g_myid = my_packet->id;
 		avatar.move(my_packet->x, my_packet->y);
-		g_left_x = my_packet->x - VIEW_LIMIT;
-		g_top_y = my_packet->y - VIEW_LIMIT;
+		g_left_x = my_packet->x - CLIENT_WIDTH / 2;
+		g_top_y = my_packet->y - CLIENT_HEIGHT / 2;
 		avatar.show();
 	}
 	break;
@@ -164,8 +166,8 @@ void ProcessPacket(char* ptr)
 
 		if (id == g_myid) {
 			avatar.move(my_packet->x, my_packet->y);
-			g_left_x = my_packet->x - VIEW_LIMIT;
-			g_top_y = my_packet->y - VIEW_LIMIT;
+			g_left_x = my_packet->x - CLIENT_WIDTH / 2;
+			g_top_y = my_packet->y - CLIENT_HEIGHT / 2;
 			avatar.show();
 		}
 		else {
@@ -186,8 +188,8 @@ void ProcessPacket(char* ptr)
 		int other_id = my_packet->id;
 		if (other_id == g_myid) {
 			avatar.move(my_packet->x, my_packet->y);
-			g_left_x = my_packet->x - VIEW_LIMIT;
-			g_top_y = my_packet->y - VIEW_LIMIT;
+			g_left_x = my_packet->x - CLIENT_WIDTH / 2;
+			g_top_y = my_packet->y - CLIENT_HEIGHT / 2;
 		}
 		else {
 			if (0 != npcs.count(other_id))
