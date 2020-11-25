@@ -11,6 +11,9 @@ using namespace chrono;
 
 sf::TcpSocket g_socket;
 
+constexpr auto SCREEN_WIDTH = 8;
+constexpr auto SCREEN_HEIGHT = 8;
+
 constexpr auto TILE_WIDTH = 65;
 constexpr auto CLIENT_WIDTH = 20;
 constexpr auto CLIENT_HEIGHT = 20;
@@ -109,14 +112,6 @@ sf::Texture* board;
 sf::Texture* pieces;
 sf::Texture* ghost_img;
 
-void send_packet(void* packet);
-void send_move_packet(unsigned char dir);
-void client_initialize();
-void client_finish();
-void ProcessPacket(char* ptr);
-void process_data(char* net_buf, size_t io_byte);
-void client_main();
-
 void client_initialize()
 {
 	board = new sf::Texture;
@@ -131,7 +126,7 @@ void client_initialize()
 	ghost_img->loadFromFile("ghost.png");
 	white_tile = OBJECT{ *board, 5, 5, TILE_WIDTH, TILE_WIDTH };
 	black_tile = OBJECT{ *board, 69, 5, TILE_WIDTH, TILE_WIDTH };
-	ghost = OBJECT{ *ghost_img, 0, 0, TILE_WIDTH, TILE_WIDTH};
+	ghost = OBJECT{ *ghost_img, 0, 0, TILE_WIDTH, TILE_WIDTH };
 	avatar = OBJECT{ *pieces, 128, 0, 64, 64 };
 	avatar.move(4, 4);
 }
@@ -153,8 +148,8 @@ void ProcessPacket(char* ptr)
 		sc_packet_login_ok* my_packet = reinterpret_cast<sc_packet_login_ok*>(ptr);
 		g_myid = my_packet->id;
 		avatar.move(my_packet->x, my_packet->y);
-		g_left_x = my_packet->x - CLIENT_WIDTH / 2;
-		g_top_y = my_packet->y - CLIENT_HEIGHT / 2;
+		g_left_x = my_packet->x - (CLIENT_WIDTH / 2);
+		g_top_y = my_packet->y - (CLIENT_HEIGHT / 2);
 		avatar.show();
 	}
 	break;
@@ -166,8 +161,8 @@ void ProcessPacket(char* ptr)
 
 		if (id == g_myid) {
 			avatar.move(my_packet->x, my_packet->y);
-			g_left_x = my_packet->x - CLIENT_WIDTH / 2;
-			g_top_y = my_packet->y - CLIENT_HEIGHT / 2;
+			g_left_x = my_packet->x - (CLIENT_WIDTH / 2);
+			g_top_y = my_packet->y - (CLIENT_HEIGHT / 2);
 			avatar.show();
 		}
 		else {
@@ -188,8 +183,8 @@ void ProcessPacket(char* ptr)
 		int other_id = my_packet->id;
 		if (other_id == g_myid) {
 			avatar.move(my_packet->x, my_packet->y);
-			g_left_x = my_packet->x - CLIENT_WIDTH / 2;
-			g_top_y = my_packet->y - CLIENT_HEIGHT / 2;
+			g_left_x = my_packet->x - (CLIENT_WIDTH / 2);
+			g_top_y = my_packet->y - (CLIENT_HEIGHT / 2);
 		}
 		else {
 			if (0 != npcs.count(other_id))
@@ -213,7 +208,7 @@ void ProcessPacket(char* ptr)
 	break;
 	default:
 		printf("Unknown PACKET type [%d]\n", ptr[1]);
-		break;
+
 	}
 }
 

@@ -15,3 +15,6 @@
 */release
 .vs/
 Debug/
+/packages
+/Release
+/2020_CLIENT/packages.config
