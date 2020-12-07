@@ -84,7 +84,7 @@ public:
 		m_name.setPosition(rx - 10, ry - 10);
 		g_window->draw(m_name);
 		if (high_resolution_clock::now() < m_time_out) {
-			m_text.setPosition(rx - 10, ry - 10);
+			m_text.setPosition(rx - 10, ry + 20);
 			g_window->draw(m_text);
 		}
 	}
@@ -206,9 +206,19 @@ void ProcessPacket(char* ptr)
 		}
 	}
 	break;
+	case SC_PACKET_CHAT:
+	{
+		sc_packet_chat* my_packet = reinterpret_cast<sc_packet_chat*>(ptr);
+		int other_id = my_packet->id;
+		if (g_myid != other_id)
+			npcs[other_id].add_chat(my_packet->message);
+		else
+			avatar.add_chat(my_packet->message);
+	}
+		break;
 	default:
 		printf("Unknown PACKET type [%d]\n", ptr[1]);
-
+		break;
 	}
 }
 
@@ -258,24 +268,24 @@ void client_main()
 	if (recv_result != sf::Socket::NotReady)
 		if (received > 0) process_data(net_buf, received);
 
-	for (int i = 0; i < WORLD_WIDTH; ++i)
-		for (int j = 0; j < WORLD_HEIGHT; ++j)
+	for (int i = avatar.m_x - CLIENT_WIDTH / 2; i < avatar.m_x + CLIENT_WIDTH / 2; ++i)
+		for (int j = avatar.m_y - CLIENT_HEIGHT / 2; j < avatar.m_y + CLIENT_HEIGHT / 2; ++j)
 		{
-			int tile_x = i + g_left_x;
-			int tile_y = j + g_top_y;
-			if ((tile_x < 0) || (tile_y < 0)) continue;
-			if ((tile_x > WORLD_WIDTH - 1) || (tile_y > WORLD_HEIGHT - 1))continue;
-			if (((tile_x + tile_y) % 2) == 0) {
-				white_tile.a_move(TILE_WIDTH * i + 7, TILE_WIDTH * j + 7);
+			int tile_x = i - g_left_x;
+			int tile_y = j - g_top_y;
+			if ((i < 0) || (j < 0)) continue;
+			if ((i > WORLD_WIDTH - 1) || (j > WORLD_HEIGHT - 1))continue;
+			if (((i + j) % 2) == 0) {
+				white_tile.a_move(TILE_WIDTH * tile_x + 7, TILE_WIDTH * tile_y + 7);
 				white_tile.a_draw();
 			}
 			else
 			{
-				black_tile.a_move(TILE_WIDTH * i + 7, TILE_WIDTH * j + 7);
+				black_tile.a_move(TILE_WIDTH * tile_x + 7, TILE_WIDTH * tile_y + 7);
 				black_tile.a_draw();
 			}
-			if (!(tile_x % 8) & !(tile_y % 8)) {
-				ghost.a_move(TILE_WIDTH * i + 7, TILE_WIDTH * j + 7);
+			if (!(i % 8) & !(j % 8)) {
+				ghost.a_move(TILE_WIDTH * tile_x + 7, TILE_WIDTH * tile_y + 7);
 				ghost.a_draw();
 			}
 		}
