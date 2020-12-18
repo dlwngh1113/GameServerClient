@@ -11,14 +11,9 @@ using namespace chrono;
 
 sf::TcpSocket g_socket;
 
-constexpr auto SCREEN_WIDTH = 8;
-constexpr auto SCREEN_HEIGHT = 8;
-
-constexpr auto TILE_WIDTH = 65;
+constexpr auto TILE_WIDTH = 32;
 constexpr auto CLIENT_WIDTH = 20;
 constexpr auto CLIENT_HEIGHT = 20;
-constexpr auto WINDOW_WIDTH = TILE_WIDTH * CLIENT_WIDTH + 10;   // size of window
-constexpr auto WINDOW_HEIGHT = TILE_WIDTH * CLIENT_HEIGHT + 10;
 constexpr auto BUF_SIZE = 200;
 
 // 추후 확장용.
@@ -43,6 +38,9 @@ private:
 
 public:
 	int m_x, m_y;
+	short hp;
+	short level;
+	int   exp;
 	char name[MAX_ID_LEN];
 	OBJECT(sf::Texture& t, int x, int y, int x2, int y2) {
 		m_showing = false;
@@ -77,19 +75,20 @@ public:
 	}
 	void draw() {
 		if (false == m_showing) return;
-		float rx = (m_x - g_left_x) * 65.0f + 8;
-		float ry = (m_y - g_top_y) * 65.0f + 8;
+		float rx = (m_x - g_left_x) * TILE_WIDTH + 8;
+		float ry = (m_y - g_top_y) * TILE_WIDTH + 8;
 		m_sprite.setPosition(rx, ry);
 		g_window->draw(m_sprite);
 		m_name.setPosition(rx - 10, ry - 10);
 		g_window->draw(m_name);
 		if (high_resolution_clock::now() < m_time_out) {
-			m_text.setPosition(rx - 10, ry + 20);
+			m_text.setPosition(rx - 10, ry + 10);
 			g_window->draw(m_text);
 		}
 	}
 	void set_name(char str[]) {
 		m_name.setFont(g_font);
+		m_name.setCharacterSize(15);
 		m_name.setString(str);
 		m_name.setFillColor(sf::Color(255, 255, 0));
 		m_name.setStyle(sf::Text::Bold);
@@ -97,6 +96,7 @@ public:
 	void add_chat(char chat[]) {
 		m_text.setFont(g_font);
 		m_text.setString(chat);
+		m_text.setCharacterSize(15);
 		m_time_out = high_resolution_clock::now() + 1s;
 	}
 };
@@ -112,22 +112,24 @@ sf::Texture* board;
 sf::Texture* pieces;
 sf::Texture* ghost_img;
 
+void send_packet(void* packet);
+
 void client_initialize()
 {
 	board = new sf::Texture;
 	pieces = new sf::Texture;
 	ghost_img = new sf::Texture;
-	if (false == g_font.loadFromFile("cour.ttf")) {
+	if (false == g_font.loadFromFile("Resources/cour.ttf")) {
 		cout << "Font Loading Error!\n";
 		while (true);
 	}
-	board->loadFromFile("chessmap.bmp");
-	pieces->loadFromFile("chess2.png");
-	ghost_img->loadFromFile("ghost.png");
-	white_tile = OBJECT{ *board, 5, 5, TILE_WIDTH, TILE_WIDTH };
-	black_tile = OBJECT{ *board, 69, 5, TILE_WIDTH, TILE_WIDTH };
+	board->loadFromFile("Resources/maptile.png");
+	pieces->loadFromFile("Resources/players.png");
+	ghost_img->loadFromFile("Resources/ghost.png");
+	white_tile = OBJECT{ *board, 0, 0, TILE_WIDTH, TILE_WIDTH };
+	black_tile = OBJECT{ *board, 32, 0, TILE_WIDTH, TILE_WIDTH };
 	ghost = OBJECT{ *ghost_img, 0, 0, TILE_WIDTH, TILE_WIDTH };
-	avatar = OBJECT{ *pieces, 128, 0, 64, 64 };
+	avatar = OBJECT{ *pieces, 0, 0, TILE_WIDTH, TILE_WIDTH };
 	avatar.move(4, 4);
 }
 
@@ -147,10 +149,32 @@ void ProcessPacket(char* ptr)
 	{
 		sc_packet_login_ok* my_packet = reinterpret_cast<sc_packet_login_ok*>(ptr);
 		g_myid = my_packet->id;
+		avatar.exp = my_packet->exp;
+		avatar.hp = my_packet->hp;
+		avatar.level = my_packet->level;
 		avatar.move(my_packet->x, my_packet->y);
-		g_left_x = my_packet->x - (CLIENT_WIDTH / 2);
-		g_top_y = my_packet->y - (CLIENT_HEIGHT / 2);
+		g_left_x = my_packet->x - CLIENT_WIDTH / 2;
+		g_top_y = my_packet->y - CLIENT_HEIGHT / 2;
 		avatar.show();
+	}
+	break;
+
+	case SC_PACKET_LOGIN_FAIL:
+	{
+		sc_packet_login_fail* my_packet = reinterpret_cast<sc_packet_login_fail*>(ptr);
+		cout << my_packet->message << endl;
+		cout << "제대로 된 아이디를 입력해주십시오:";
+		string s;
+		cin >> s;
+
+		cs_packet_login l_packet;
+		l_packet.size = sizeof(l_packet);
+		l_packet.type = CS_LOGIN;
+		int t_id = GetCurrentProcessId();
+		sprintf_s(l_packet.name, s.c_str());
+		strcpy_s(avatar.name, l_packet.name);
+		avatar.set_name(l_packet.name);
+		send_packet(&l_packet);
 	}
 	break;
 
@@ -161,15 +185,15 @@ void ProcessPacket(char* ptr)
 
 		if (id == g_myid) {
 			avatar.move(my_packet->x, my_packet->y);
-			g_left_x = my_packet->x - (CLIENT_WIDTH / 2);
-			g_top_y = my_packet->y - (CLIENT_HEIGHT / 2);
+			g_left_x = my_packet->x - CLIENT_WIDTH / 2;
+			g_top_y = my_packet->y - CLIENT_HEIGHT / 2;
 			avatar.show();
 		}
 		else {
 			if (id < NPC_ID_START)
-				npcs[id] = OBJECT{ *pieces, 64, 0, 64, 64 };
+				npcs[id] = OBJECT{ *pieces, 0, 0, TILE_WIDTH, TILE_WIDTH };
 			else
-				npcs[id] = OBJECT{ *pieces, 0, 0, 64, 64 };
+				npcs[id] = OBJECT{ *pieces, 32, 0, TILE_WIDTH, TILE_WIDTH };
 			strcpy_s(npcs[id].name, my_packet->name);
 			npcs[id].set_name(my_packet->name);
 			npcs[id].move(my_packet->x, my_packet->y);
@@ -183,8 +207,8 @@ void ProcessPacket(char* ptr)
 		int other_id = my_packet->id;
 		if (other_id == g_myid) {
 			avatar.move(my_packet->x, my_packet->y);
-			g_left_x = my_packet->x - (CLIENT_WIDTH / 2);
-			g_top_y = my_packet->y - (CLIENT_HEIGHT / 2);
+			g_left_x = my_packet->x - CLIENT_WIDTH / 2;
+			g_top_y = my_packet->y - CLIENT_HEIGHT / 2;
 		}
 		else {
 			if (0 != npcs.count(other_id))
@@ -298,6 +322,14 @@ void client_main()
 	sprintf_s(buf, "(%d, %d)", avatar.m_x, avatar.m_y);
 	text.setString(buf);
 	g_window->draw(text);
+
+	sf::Text playerStat;
+	playerStat.setFont(g_font);
+	sprintf_s(buf, "Level-%hd, Hp-%hd, Exp-%d", avatar.level, avatar.hp, avatar.exp);
+	text.setString(buf);
+	text.setCharacterSize(20);
+	text.setPosition(CLIENT_WIDTH * TILE_WIDTH / 4, 0.f);
+	g_window->draw(text);
 }
 
 void send_packet(void* packet)
@@ -317,6 +349,13 @@ void send_move_packet(unsigned char dir)
 	send_packet(&m_packet);
 }
 
+void send_logout_packet()
+{
+	cs_packet_logout p;
+	p.type = CS_LOGOUT;
+	p.size = sizeof(p);
+	send_packet(&p);
+}
 
 int main()
 {
@@ -332,18 +371,21 @@ int main()
 		while (true);
 	}
 
+	std::cout << "플레이어 아이디를 입력하세요:";
+	cin >> s;
+
 	client_initialize();
 
 	cs_packet_login l_packet;
 	l_packet.size = sizeof(l_packet);
 	l_packet.type = CS_LOGIN;
 	int t_id = GetCurrentProcessId();
-	sprintf_s(l_packet.name, "P%03d", t_id % 1000);
+	sprintf_s(l_packet.name, s.c_str());
 	strcpy_s(avatar.name, l_packet.name);
 	avatar.set_name(l_packet.name);
 	send_packet(&l_packet);
 
-	sf::RenderWindow window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "2D CLIENT");
+	sf::RenderWindow window(sf::VideoMode(TILE_WIDTH * CLIENT_WIDTH, TILE_WIDTH * CLIENT_HEIGHT), "2D CLIENT");
 	g_window = &window;
 
 	while (window.isOpen())
@@ -369,6 +411,7 @@ int main()
 					send_move_packet(MV_DOWN);
 					break;
 				case sf::Keyboard::Escape:
+					send_logout_packet();
 					window.close();
 					break;
 				}
