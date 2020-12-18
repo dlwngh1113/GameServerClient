@@ -103,6 +103,7 @@ public:
 
 OBJECT avatar;
 unordered_map <int, OBJECT> npcs;
+vector<sf::Text> g_chatLog;
 
 OBJECT white_tile;
 OBJECT black_tile;
@@ -158,7 +159,6 @@ void ProcessPacket(char* ptr)
 		avatar.show();
 	}
 	break;
-
 	case SC_PACKET_LOGIN_FAIL:
 	{
 		sc_packet_login_fail* my_packet = reinterpret_cast<sc_packet_login_fail*>(ptr);
@@ -177,7 +177,6 @@ void ProcessPacket(char* ptr)
 		send_packet(&l_packet);
 	}
 	break;
-
 	case SC_PACKET_ENTER:
 	{
 		sc_packet_enter* my_packet = reinterpret_cast<sc_packet_enter*>(ptr);
@@ -216,7 +215,6 @@ void ProcessPacket(char* ptr)
 		}
 	}
 	break;
-
 	case SC_PACKET_LEAVE:
 	{
 		sc_packet_leave* my_packet = reinterpret_cast<sc_packet_leave*>(ptr);
@@ -236,8 +234,25 @@ void ProcessPacket(char* ptr)
 		int other_id = my_packet->id;
 		if (g_myid != other_id)
 			npcs[other_id].add_chat(my_packet->message);
-		else
-			avatar.add_chat(my_packet->message);
+		else {
+			sf::Text tmp;
+			char buf[MAX_STR_LEN];
+			tmp.setFont(g_font);
+			strcpy_s(buf, my_packet->message);
+			tmp.setString(buf);
+			tmp.setCharacterSize(20);
+			g_chatLog.push_back(tmp);
+			if (g_chatLog.size() > 3)
+				g_chatLog.erase(g_chatLog.begin());
+		}
+	}
+		break;
+	case SC_PACKET_STAT_CHANGE:
+	{
+		sc_packet_stat_change* p = reinterpret_cast<sc_packet_stat_change*>(ptr);
+		avatar.level = p->level;
+		avatar.exp = p->exp;
+		avatar.hp = p->hp;
 	}
 		break;
 	default:
@@ -323,13 +338,17 @@ void client_main()
 	text.setString(buf);
 	g_window->draw(text);
 
-	sf::Text playerStat;
-	playerStat.setFont(g_font);
 	sprintf_s(buf, "Level-%hd, Hp-%hd, Exp-%d", avatar.level, avatar.hp, avatar.exp);
 	text.setString(buf);
 	text.setCharacterSize(20);
 	text.setPosition(CLIENT_WIDTH * TILE_WIDTH / 4, 0.f);
 	g_window->draw(text);
+
+	for (int i = 0; i < g_chatLog.size(); ++i) {
+		g_chatLog[i].setPosition(0,
+			CLIENT_HEIGHT * TILE_WIDTH * 0.75 + 20 * i);
+		g_window->draw(g_chatLog[i]);
+	}
 }
 
 void send_packet(void* packet)
@@ -337,7 +356,6 @@ void send_packet(void* packet)
 	char* p = reinterpret_cast<char*>(packet);
 	size_t sent;
 	sf::Socket::Status st = g_socket.send(p, p[0], sent);
-	int a = 3;
 }
 
 void send_move_packet(unsigned char dir)
@@ -346,6 +364,8 @@ void send_move_packet(unsigned char dir)
 	m_packet.type = CS_MOVE;
 	m_packet.size = sizeof(m_packet);
 	m_packet.direction = dir;
+	m_packet.move_time = duration_cast<seconds>(high_resolution_clock::now()
+		.time_since_epoch()).count();
 	send_packet(&m_packet);
 }
 
@@ -354,6 +374,16 @@ void send_logout_packet()
 	cs_packet_logout p;
 	p.type = CS_LOGOUT;
 	p.size = sizeof(p);
+	send_packet(&p);
+}
+
+void send_atk_packet()
+{
+	cs_packet_attack p;
+	p.type = CS_ATTACK;
+	p.size = sizeof(p);
+	p.atk_time = duration_cast<seconds>(high_resolution_clock::now()
+		.time_since_epoch()).count();
 	send_packet(&p);
 }
 
@@ -413,6 +443,9 @@ int main()
 				case sf::Keyboard::Escape:
 					send_logout_packet();
 					window.close();
+					break;
+				case sf::Keyboard::A:
+					send_atk_packet();
 					break;
 				}
 			}
