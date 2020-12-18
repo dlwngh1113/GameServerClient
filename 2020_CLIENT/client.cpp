@@ -246,7 +246,7 @@ void ProcessPacket(char* ptr)
 				g_chatLog.erase(g_chatLog.begin());
 		}
 	}
-		break;
+	break;
 	case SC_PACKET_STAT_CHANGE:
 	{
 		sc_packet_stat_change* p = reinterpret_cast<sc_packet_stat_change*>(ptr);
@@ -254,7 +254,7 @@ void ProcessPacket(char* ptr)
 		avatar.exp = p->exp;
 		avatar.hp = p->hp;
 	}
-		break;
+	break;
 	default:
 		printf("Unknown PACKET type [%d]\n", ptr[1]);
 		break;
