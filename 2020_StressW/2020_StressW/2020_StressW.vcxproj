@@ -139,7 +139,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\2020_IOCP_SERVER\2020_IOCP_SERVER\protocol.h" />
+    <ClInclude Include="..\..\..\GameServerServer\2020_IOCP_SERVER\protocol.h" />
     <ClInclude Include="NetworkModule.h" />
   </ItemGroup>
   <ItemGroup>

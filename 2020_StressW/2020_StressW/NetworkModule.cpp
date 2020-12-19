@@ -159,13 +159,17 @@ void ProcessPacket(int ci, unsigned char packet[])
 		g_clients[my_id].x = login_packet->x;
 		g_clients[my_id].y = login_packet->y;
 
-		//cs_packet_teleport t_packet;
-		//t_packet.size = sizeof(t_packet);
-		//t_packet.type = CS_TELEPORT;
-		//SendPacket(my_id, &t_packet);
+		cs_packet_teleport t_packet;
+		t_packet.x = rand() % WORLD_WIDTH;
+		t_packet.y = rand() % WORLD_HEIGHT;
+		t_packet.size = sizeof(t_packet);
+		t_packet.type = CS_TELEPORT;
+		SendPacket(my_id, &t_packet);
 	}
 	break;
 	case SC_PACKET_CHAT:
+		break;
+	case SC_PACKET_STAT_CHANGE:
 		break;
 	default: MessageBox(hWnd, L"Unknown Packet Type", L"ERROR", 0);
 		while (true);
